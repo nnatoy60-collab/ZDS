@@ -10,6 +10,7 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
         }
         .hero-gradient {
             background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
@@ -18,11 +19,73 @@
             transform: translateY(-5px);
             transition: transform 0.3s ease;
         }
+        .mobile-menu {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        .backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .backdrop.active {
+            display: block;
+        }
+        .sticky-header {
+            transition: all 0.3s ease;
+        }
+        .sticky-header.scrolled {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        .testimonial-card {
+            transition: all 0.3s ease;
+        }
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .hero-bg {
+            background-image: url('zdspgBG.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        @media (max-width: 768px) {
+            .hero-bg {
+                background-position: 70% center;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Backdrop for mobile menu -->
+    <div class="backdrop" id="backdrop"></div>
+
     <!-- Header -->
-    <header class="bg-white shadow-md sticky top-0 z-50">
+    <header class="bg-white sticky-header sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center">
                 <div class="bg-blue-800 text-white p-2 rounded-lg mr-3">
@@ -35,28 +98,85 @@
             </div>
             
             <nav class="hidden md:flex space-x-8">
-                <a href="#home" class="text-blue-800 font-medium hover:text-blue-600">Home</a>
-                <a href="#about" class="text-gray-700 font-medium hover:text-blue-600">About</a>
-                <a href="#courses" class="text-gray-700 font-medium hover:text-blue-600">Courses</a>
-                <a href="#facilities" class="text-gray-700 font-medium hover:text-blue-600">Facilities</a>
-                <a href="#contact" class="text-gray-700 font-medium hover:text-blue-600">Contact</a>
+                <a href="#home" class="text-blue-800 font-medium hover:text-blue-600 transition duration-300">Home</a>
+                <a href="#about" class="text-gray-700 font-medium hover:text-blue-600 transition duration-300">About</a>
+                <a href="#courses" class="text-gray-700 font-medium hover:text-blue-600 transition duration-300">Courses</a>
+                <a href="#facilities" class="text-gray-700 font-medium hover:text-blue-600 transition duration-300">Facilities</a>
+                <a href="#testimonials" class="text-gray-700 font-medium hover:text-blue-600 transition duration-300">Testimonials</a>
+                <a href="#contact" class="text-gray-700 font-medium hover:text-blue-600 transition duration-300">Contact</a>
             </nav>
             
-            <button class="md:hidden text-blue-800">
+            <button class="md:hidden text-blue-800" id="mobile-menu-button">
                 <i class="fas fa-bars text-xl"></i>
             </button>
         </div>
     </header>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed top-0 left-0 h-full w-64 bg-white z-50 shadow-lg" id="mobile-menu">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="bg-blue-800 text-white p-2 rounded-lg mr-3">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-blue-900">ZDSPGC</h1>
+                    <p class="text-xs text-gray-600">Dimataling Campus</p>
+                </div>
+            </div>
+            <button class="text-gray-700" id="close-menu-button">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="p-4 space-y-4">
+            <a href="#home" class="block text-blue-800 font-medium py-2">Home</a>
+            <a href="#about" class="block text-gray-700 font-medium py-2">About</a>
+            <a href="#courses" class="block text-gray-700 font-medium py-2">Courses</a>
+            <a href="#facilities" class="block text-gray-700 font-medium py-2">Facilities</a>
+            <a href="#testimonials" class="block text-gray-700 font-medium py-2">Testimonials</a>
+            <a href="#contact" class="block text-gray-700 font-medium py-2">Contact</a>
+        </nav>
+    </div>
+
     <!-- Hero Section -->
-    <section id="home" class="hero-gradient text-white py-16 md:py-24">
-        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
-            <div class="md:w-1/2 mb-10 md:mb-0">
+    <section id="home" class="text-white py-16 md:py-24 relative overflow-hidden hero-bg">
+        <div class="absolute inset-0 bg-blue-900 opacity-80"></div>
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center relative z-10">
+            <div class="md:w-1/2 mb-10 md:mb-0 fade-in">
                 <h1 class="text-4xl md:text-5xl font-bold mb-4">ZDSPGC Dimataling Campus</h1>
                 <p class="text-xl mb-6">Providing quality education and shaping future leaders through our specialized programs.</p>
-                <div class="flex space-x-4">
-                    <a href="#courses" class="bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold hover:bg-blue-100 transition duration-300">Explore Courses</a>
-                    <a href="#contact" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-800 transition duration-300">Contact Us</a>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="#courses" class="bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold hover:bg-blue-100 transition duration-300 text-center">Explore Courses</a>
+                    <a href="#contact" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-800 transition duration-300 text-center">Contact Us</a>
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center fade-in">
+                <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-md">
+                    <img src="zdspgBG.jpg" alt="ZDSPGC Campus" class="rounded-xl shadow-lg w-full h-64 object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-12 bg-blue-800 text-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="text-center stat-card">
+                    <div class="text-3xl font-bold mb-2">500+</div>
+                    <div class="text-blue-200">Students</div>
+                </div>
+                <div class="text-center stat-card">
+                    <div class="text-3xl font-bold mb-2">30+</div>
+                    <div class="text-blue-200">Faculty</div>
+                </div>
+                <div class="text-center stat-card">
+                    <div class="text-3xl font-bold mb-2">3</div>
+                    <div class="text-blue-200">Programs</div>
+                </div>
+                <div class="text-center stat-card">
+                    <div class="text-3xl font-bold mb-2">15+</div>
+                    <div class="text-blue-200">Years</div>
                 </div>
             </div>
         </div>
@@ -65,13 +185,13 @@
     <!-- About Section -->
     <section id="about" class="py-16 bg-white">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12">About ZDSPGC Dimataling Campus</h2>
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12 fade-in">About ZDSPGC Dimataling Campus</h2>
             
             <div class="flex flex-col md:flex-row items-center">
-                <div class="md:w-1/2 mb-10 md:mb-0">
-                    <img src="https://cdn.pixabay.com/photo/2015/07/31/11/45/library-869061_1280.jpg" alt="Campus Library" class="rounded-xl shadow-lg">
+                <div class="md:w-1/2 mb-10 md:mb-0 fade-in">
+                    <img src="zdspgBG.jpg" alt="ZDSPGC Campus" class="rounded-xl shadow-lg w-full h-80 object-cover">
                 </div>
-                <div class="md:w-1/2 md:pl-12">
+                <div class="md:w-1/2 md:pl-12 fade-in">
                     <h3 class="text-2xl font-semibold text-blue-800 mb-4">Our Mission</h3>
                     <p class="text-gray-700 mb-6">ZDSPGC Dimataling Campus is committed to providing accessible, quality, and relevant education that transforms students into competent and ethical professionals ready to meet the challenges of the global community.</p>
                     
@@ -89,12 +209,12 @@
     <!-- Courses Section -->
     <section id="courses" class="py-16 bg-gray-100">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-blue-900 mb-4">Our Major Courses</h2>
-            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">ZDSPGC Dimataling Campus offers three major programs designed to equip students with the knowledge and skills needed for successful careers.</p>
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-4 fade-in">Our Major Courses</h2>
+            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12 fade-in">ZDSPGC Dimataling Campus offers three major programs designed to equip students with the knowledge and skills needed for successful careers.</p>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- ACT Course -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden course-card">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden course-card fade-in">
                     <div class="h-2 bg-green-600"></div>
                     <div class="p-6">
                         <div class="flex items-center mb-4">
@@ -115,7 +235,7 @@
                 </div>
                 
                 <!-- BSIS Course -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden course-card">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden course-card fade-in">
                     <div class="h-2 bg-blue-600"></div>
                     <div class="p-6">
                         <div class="flex items-center mb-4">
@@ -136,7 +256,7 @@
                 </div>
                 
                 <!-- BPED Course -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden course-card">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden course-card fade-in">
                     <div class="h-2 bg-red-600"></div>
                     <div class="p-6">
                         <div class="flex items-center mb-4">
@@ -162,10 +282,10 @@
     <!-- Facilities Section -->
     <section id="facilities" class="py-16 bg-white">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12">Campus Facilities</h2>
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12 fade-in">Campus Facilities</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-blue-50 rounded-xl p-6 text-center">
+                <div class="bg-blue-50 rounded-xl p-6 text-center fade-in">
                     <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-desktop text-blue-600 text-2xl"></i>
                     </div>
@@ -173,7 +293,7 @@
                     <p class="text-gray-600">State-of-the-art computer laboratories with high-speed internet access.</p>
                 </div>
                 
-                <div class="bg-green-50 rounded-xl p-6 text-center">
+                <div class="bg-green-50 rounded-xl p-6 text-center fade-in">
                     <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-book text-green-600 text-2xl"></i>
                     </div>
@@ -181,7 +301,7 @@
                     <p class="text-gray-600">Comprehensive collection of books, journals, and digital resources.</p>
                 </div>
                 
-                <div class="bg-red-50 rounded-xl p-6 text-center">
+                <div class="bg-red-50 rounded-xl p-6 text-center fade-in">
                     <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-dumbbell text-red-600 text-2xl"></i>
                     </div>
@@ -189,7 +309,7 @@
                     <p class="text-gray-600">Well-equipped gymnasium, courts, and fields for various sports activities.</p>
                 </div>
                 
-                <div class="bg-purple-50 rounded-xl p-6 text-center">
+                <div class="bg-purple-50 rounded-xl p-6 text-center fade-in">
                     <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-wifi text-purple-600 text-2xl"></i>
                     </div>
@@ -200,13 +320,61 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-16 bg-gray-100">
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-16 bg-gray-100">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12">Contact Us</h2>
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12 fade-in">What Our Students Say</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 testimonial-card fade-in">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Maria Santos</h3>
+                            <p class="text-gray-600 text-sm">BSIS Graduate</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"The BSIS program at ZDSPGC provided me with the technical and business skills needed to excel in my career. The faculty are knowledgeable and supportive."</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 testimonial-card fade-in">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-green-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Juan Dela Cruz</h3>
+                            <p class="text-gray-600 text-sm">ACT Student</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"The ACT program gave me practical IT skills that helped me land a job even before graduation. The hands-on approach to learning is exceptional."</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 testimonial-card fade-in">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-red-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">Ana Reyes</h3>
+                            <p class="text-gray-600 text-sm">BPED Graduate</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"The BPED program equipped me with both theoretical knowledge and practical skills in physical education. I'm now confidently teaching and coaching."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12 fade-in">Contact Us</h2>
             
             <div class="flex flex-col md:flex-row">
-                <div class="md:w-1/2 mb-10 md:mb-0">
+                <div class="md:w-1/2 mb-10 md:mb-0 fade-in">
                     <div class="bg-white rounded-xl shadow-lg p-8">
                         <h3 class="text-xl font-bold text-blue-800 mb-6">Get In Touch</h3>
                         
@@ -257,29 +425,29 @@
                     </div>
                 </div>
                 
-                <div class="md:w-1/2 md:pl-8">
+                <div class="md:w-1/2 md:pl-8 fade-in">
                     <div class="bg-white rounded-xl shadow-lg p-8">
                         <h3 class="text-xl font-bold text-blue-800 mb-6">Send Us a Message</h3>
                         
-                        <form>
+                        <form id="contact-form">
                             <div class="mb-4">
                                 <label class="block text-gray-700 mb-2" for="name">Full Name</label>
-                                <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             </div>
                             
                             <div class="mb-4">
                                 <label class="block text-gray-700 mb-2" for="email">Email Address</label>
-                                <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             </div>
                             
                             <div class="mb-4">
                                 <label class="block text-gray-700 mb-2" for="subject">Subject</label>
-                                <input type="text" id="subject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" id="subject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             </div>
                             
                             <div class="mb-4">
                                 <label class="block text-gray-700 mb-2" for="message">Message</label>
-                                <textarea id="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                <textarea id="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
                             </div>
                             
                             <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">Send Message</button>
@@ -314,6 +482,7 @@
                         <li><a href="#about" class="text-blue-200 hover:text-white transition duration-300">About</a></li>
                         <li><a href="#courses" class="text-blue-200 hover:text-white transition duration-300">Courses</a></li>
                         <li><a href="#facilities" class="text-blue-200 hover:text-white transition duration-300">Facilities</a></li>
+                        <li><a href="#testimonials" class="text-blue-200 hover:text-white transition duration-300">Testimonials</a></li>
                         <li><a href="#contact" class="text-blue-200 hover:text-white transition duration-300">Contact</a></li>
                     </ul>
                 </div>
@@ -335,6 +504,33 @@
     </footer>
 
     <script>
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeMenuButton = document.getElementById('close-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const backdrop = document.getElementById('backdrop');
+
+        function openMobileMenu() {
+            mobileMenu.classList.add('active');
+            backdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            backdrop.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        mobileMenuButton.addEventListener('click', openMobileMenu);
+        closeMenuButton.addEventListener('click', closeMobileMenu);
+        backdrop.addEventListener('click', closeMobileMenu);
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -352,7 +548,47 @@
                 }
             });
         });
+
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.sticky-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Fade-in animation on scroll
+        function checkFadeIn() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            fadeElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', checkFadeIn);
+        window.addEventListener('load', checkFadeIn);
+
+        // Form submission
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+
+        // Image fallback handling
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.src = 'https://cdn.pixabay.com/photo/2017/07/31/16/13/university-2561375_1280.jpg';
+            });
+        });
     </script>
 </body>
-
 </html>
